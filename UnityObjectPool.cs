@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class UnityObjectPool<T> where T : UnityEngine.Object
 {
@@ -19,14 +18,16 @@ public class UnityObjectPool<T> where T : UnityEngine.Object
     private readonly Func<string, T> _factory;
     private readonly Action<T> _onGet;
     private readonly Action<T> _onReturn;
+    private readonly Action<T> _onClear;
     #endregion
 
     #region Constructors
-    public UnityObjectPool(Func<string, T> factory, Action<T> onGet = null, Action<T> onReturn = null)
+    public UnityObjectPool(Func<string, T> factory, Action<T> onGet = null, Action<T> onReturn = null, Action<T> onClear = null)
     {
         _factory = factory;
         _onGet = onGet;
         _onReturn = onReturn;
+        _onClear = onClear;
     }
     #endregion
 
@@ -59,15 +60,18 @@ public class UnityObjectPool<T> where T : UnityEngine.Object
     {
         ReleaseAll();
 
-        foreach (var entry in _pathPool)
+        if (_onClear != null)
         {
-            ObjectPoolEntry pool = entry.Value;
-            while (pool.Instances.Count > 0)
+            foreach (var entry in _pathPool)
             {
-                T obj = pool.Instances.Dequeue();
-                if (obj != null)
+                ObjectPoolEntry pool = entry.Value;
+                while (pool.Instances.Count > 0)
                 {
-                    UnityEngine.GameObject.Destroy(obj);
+                    T obj = pool.Instances.Dequeue();
+                    if (obj != null)
+                    {
+                        _onClear?.Invoke(obj);
+                    }
                 }
             }
         }
