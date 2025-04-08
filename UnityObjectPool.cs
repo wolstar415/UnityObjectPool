@@ -76,7 +76,7 @@ public class UnityObjectPool<T> where T : UnityEngine.Object
         _activeInstances.Clear();
     }
 
-    public void PrewarmPool(string prefabName, int count)
+    public void PrewarmPool(string prefabName, int count, Action<T> onInstanceCreated = null)
     {
         if (!_pathPool.TryGetValue(prefabName, out ObjectPoolEntry pool))
         {
@@ -88,11 +88,13 @@ public class UnityObjectPool<T> where T : UnityEngine.Object
             pool = new ObjectPoolEntry { Prefab = prefabObj, Name = prefabName };
             _pathPool.Add(prefabName, pool);
         }
+
         for (int i = 0; i < count; i++)
         {
             T instance = _factory(prefabName);
             if (instance != null)
             {
+                onInstanceCreated?.Invoke(instance);
                 pool.Instances.Enqueue(instance);
             }
         }
