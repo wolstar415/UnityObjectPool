@@ -6,7 +6,6 @@ public class UnityObjectPool<T> where T : UnityEngine.Object
     #region Inner Classes
     protected class ObjectPoolEntry
     {
-        public T Prefab;
         public Queue<T> Instances = new Queue<T>();
         public string Name;
     }
@@ -84,12 +83,7 @@ public class UnityObjectPool<T> where T : UnityEngine.Object
     {
         if (!_pathPool.TryGetValue(prefabName, out ObjectPoolEntry pool))
         {
-            T prefabObj = _factory(prefabName);
-            if (prefabObj == null)
-            {
-                return;
-            }
-            pool = new ObjectPoolEntry { Prefab = prefabObj, Name = prefabName };
+            pool = new ObjectPoolEntry { Name = prefabName };
             _pathPool.Add(prefabName, pool);
         }
 
@@ -138,12 +132,7 @@ public class UnityObjectPool<T> where T : UnityEngine.Object
     {
         if (!_pathPool.TryGetValue(prefabName, out ObjectPoolEntry pool))
         {
-            T prefabObj = _factory(prefabName);
-            if (prefabObj == null)
-            {
-                return default(T);
-            }
-            pool = new ObjectPoolEntry { Prefab = prefabObj, Name = prefabName };
+            pool = new ObjectPoolEntry { Name = prefabName };
             _pathPool.Add(prefabName, pool);
         }
         return GetObject(pool);
